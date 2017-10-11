@@ -34,7 +34,7 @@
 						<%= f.text_field :location, class: "form-control"  %>
 						</div>
 						<div class="col-md-4 col-xs-4" style="right-padding: 0px; padding-right: 0px;" >
-						<%= select_tag :state, options_for_select(us_states, selected: @event.state), class: "form-control" %>
+						<%= select_tag :city, options_for_select(ph_cities, selected: @event.city), class: "form-control" %>
 						</div>
 					</div>
 			</div>

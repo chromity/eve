@@ -11,7 +11,7 @@
 	<h3><b>User profile</b></h3>
 	<p>Name: <b><%= @user.first_name%> <%= @user.last_name  %></b></p>
 	<p>Email: <b><%= @user.email %></b></p>
-	<p>Location: <b><%= @user.location  %>, <%= @user.state  %></b></p>
+	<p>Location: <b><%= @user.location  %>, <%= @user.city  %></b></p>
 	<p>People are joining: <b></b></p>
 	<p><a href="/users/<%= @user.id %>/edit">Edit</a></p>
 	<p><a href="/events">Back to Events list</a></p>

@@ -4,6 +4,6 @@ class Event < ApplicationRecord
   has_many :users, through: :user_events
   has_many :comments, dependent: :destroy
 
-  validates :name, :date, :location, :state, presence: true
+  validates :name, :date, :location, :city, presence: true
   validates :date,  date: { after: Proc.new { Date.today }, message: 'must be after today' }, on: :create
 end

@@ -1,5 +1,5 @@
 Rails.application.routes.draw do
-  
+
   root :to => "events#index"
 
   # USERS routes
@@ -11,11 +11,11 @@ Rails.application.routes.draw do
 
   post 'users' => 'users#create'
 
-  get 'users/destroy'
+  delete 'users/destroy' => 'events#destroy'
 
   get 'users/:id'=> 'users#show'
 
-  put 'users/:id' => 'users#update'
+  patch 'users/:id' => 'users#update'
 
   #SESSIONS routes
 
@@ -42,7 +42,7 @@ Rails.application.routes.draw do
   get 'events/location' => 'events#location'
 
 
-  put 'events/:id' => 'events#update'
+  patch 'events/:id' => 'events#update'
 
   delete 'events/:id' =>  'events#destroy'
 

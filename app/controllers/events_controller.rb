@@ -8,22 +8,22 @@ class EventsController < ApplicationController
     @event = Event.new
 
     if session[:user]
-      state = User.where("id=?", session[:user_id]).limit(1).pluck(:state)
-      @events = Event.where(["state = ?", state]).order(created_at: :desc)
-      @events_all = Event.where(["state <> ?", state]).order(created_at: :desc).paginate(page: params[:page], per_page: 5)
+      city = User.where("id=?", session[:user_id]).limit(1).pluck(:city)
+      @events = Event.where(["city = ?", city]).order(created_at: :desc)
+      @events_all = Event.where(["city <> ?", city]).order(created_at: :desc).paginate(page: params[:page], per_page: 5)
     else
       redirect_to "/sessions/new"
     end
   end
 
   def location
-    @events = Event.all.order(state: :asc).paginate(page: params[:page], per_page: 10)
+    @events = Event.all.order(city: :asc).paginate(page: params[:page], per_page: 10)
   end
 
   def create
     @user = User.find(session[:user_id])
     @event = @user.events.new(event_params)
-    @event.state = params[:state]
+    @event.city = params[:city]
     @event.date = params[:date]
 
     if @event.save
@@ -63,7 +63,7 @@ class EventsController < ApplicationController
   def update
     @event = Event.find(params[:id])
     @event.date = params[:date]
-    @event.state = params[:state]
+    @event.city = params[:city]
     result = @event.update_attributes(event_params)
     if result
       redirect_to "/events"
@@ -92,7 +92,7 @@ class EventsController < ApplicationController
   private
 
   def event_params
-    params.require(:event).permit(:name, :date, :location, :state, :host)
+    params.require(:event).permit(:name, :date, :location, :city, :host)
   end
 
   def userevent_params
