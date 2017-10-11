@@ -1,2 +1,195 @@
-<h1>Events#index</h1>
-<p>Find me in app/views/events/index.html.erb</p>
+<div class="container">
+
+		<% if flash[:notice] %>
+			<div class="row">
+				<div class="col-md-4 col-xs-12	alert alert-<%= flash[:color]%>">
+					<%= flash[:notice]  %>
+				</div>
+			</div>
+		<% end %>
+	<div class="row">
+		<h3>Welcome, <%= session[:user] %></h3>
+
+		<!-- EVENTS in USER's STATE -->
+		<%  if @events.any? %>
+		<div class="col-md-10 col-xs-12">
+		<p>Here are some events in your state:</p>
+		<table class="table table-striped">
+			<tr>
+				<th>Name</th>
+				<th>Date</th>
+				<th>Location</th>
+				<th>Host</th>
+				<th colspan="2">Action/Status</th>
+			</tr>
+				<% @events.each do |event| %>
+				<tr>
+				<td><a href="/events/<%= event.id %>"><%= event.name %></a></td>
+				<td><%= date_for_display(event.date) %></td>
+				<td><%= event.location %></td>
+				<!-- strange behaviour of Event model -->
+				<% u = User.find(event.host) %>
+				<td><%= u.first_name  %></td>
+				<td>
+				<!-- if logged user is Host of Event show EDIT AND DELETE -->
+					<% if event.host == session[:user_id] %>
+					<a href="/events/<%= event.id %>/edit" class="btn btn-xs btn-success"> Edit </a> |
+					<%= link_to 'Delete',  { action: :destroy, id: event.id }, method: :delete, data: { confirm: 'Are you sure to delete ' + event.name + '?'}, class: "btn btn-xs btn-danger" %>
+
+				<!-- if logged user is joined Event show STATUS and CANCEL -->
+					<% elsif user_events(event.id, session[:user_id]) %>
+					<div class="row">
+						joined |
+						<%= form_for(:userevent, url: {controller: 'events', action: 'cancel'}, html: {style: "display:inline"}) do |f|   %>
+					<%= f.hidden_field :user_id, value: session[:user_id] %>
+					<%= f.hidden_field :event_id, value: event.id  %>
+					<%= f.submit :Cancel, class: "btn btn-xs btn-default"  %>
+					<% end %>
+					</div>
+
+					<% else %>
+					<%= form_for(:userevent, url: { contoller: 'events', action: 'join'}) do |f|   %>
+					<%= f.hidden_field :user_id, value: session[:user_id] %>
+					<%= f.hidden_field :event_id, value: event.id  %>
+					<%= f.submit :Join, class: "btn btn-xs btn-primary"  %>
+					<% end %>
+					<% end %>
+				</td>
+				</tr>
+				<% end %>
+
+		</table>
+		<hr>
+		</div>
+		<% else %>
+
+			<h4 class="alert alert-warning">Sorry no events found in your state...</h4>
+		<% end %>
+
+	</div>
+
+	<!-- EVENTS IN OTHER STATE'S -->
+	<div class="row">
+		<% if @events_all.any?  %>
+		<div class="col-md-10 col-xs-12">
+		<p>Here are some events in other states:</p>
+		<table class="table table-striped">
+			<tr>
+			<th>Name</th>
+			<th>Date</th>
+			<th>Location</th>
+			<th>State</th>
+			<th>Host</th>
+			<th>Action</th>
+			</tr>
+				<% @events_all.each do |event| %>
+				<tr>
+				<td><a href="/events/<%= event.id %>"><%= event.name %></a></td>
+				<td><%= date_for_display(event.date)  %></td>
+				<td><%= event.location %></td>
+				<td><%= event.state %></td>
+				<td><%= event.user.first_name  %></td>
+				<td>
+				<% if user_events(event.id, session[:user_id]) %>
+					<div class="row">
+						joined |
+						<%= form_for(:userevent, url: {controller: 'events', actions: 'cancel'}, html: {style: "display:inline"}) do |f|   %>
+						<%= f.hidden_field :user_id, value: session[:user_id] %>
+						<%= f.hidden_field :event_id, value: event.id  %>
+						<%= f.submit :Cancel, class: "btn btn-xs btn-default"  %>
+						<% end %>
+					<% else %>
+						<%= form_for(:userevent, url: {controller: 'events', action: 'join'}) do |f|   %>
+						<%= f.hidden_field :user_id, value: session[:user_id] %>
+						<%= f.hidden_field :event_id, value: event.id  %>
+						<%= f.submit :Join, class: "btn btn-xs btn-primary"  %>
+						<% end %>
+					<% end %>
+				</td>
+				</tr>
+				<% end %>
+
+		</table>
+		<div class="pull-right">
+			<%= will_paginate @events_all %>
+		</div>
+
+		</div>
+		<% else %>
+			<h4 class="alert alert-warning">Sorry no events found in other states...</h4>
+		<% end %>
+
+	</div>
+
+	<!-- ADD EVENT -->
+
+	<div class="row">
+		<h3>Add event</h3>
+		<div class="col-md-6 col-xs-12 well">
+		<br>
+
+		<% if flash[:errors] %>
+		<div class="alert alert-danger">
+			<ul>
+			<% flash[:errors].each do |e|  %>
+			<li><%= e  %></li>
+			<% end %>
+			</ul>
+		</div>
+		<% end %>
+
+			<%= form_for(:event, url: {controller: 'events', action: 'create'}, html: { class: "form-horizontal"}) do |f|   %>
+
+			<div class="form-group">
+				<%= f.label :name, 'Name:', class: "form-label col-md-2 col-xs-12"  %>
+				<%= f.hidden_field :host, value: session[:user_id]  %>
+				<div class="col-md-10 col-xs-12">
+					<%= f.text_field :name, class: "form-control"  %>
+				</div>
+
+			</div>
+			<div class="form-group">
+				<%= f.label :date, 'Date:', class: "form-label col-md-2 col-xs-12"  %>
+				<div class="col-md-10 col-xs-12">
+					<div class="input-group date">
+  					<input type="text" name="date" id="date" class="form-control">
+  						<span class="input-group-addon">
+  							<i class="glyphicon glyphicon-th"></i>
+  						</span>
+					</div>
+				</div>
+			</div>
+
+			<div class="form-group">
+					<%= f.label :location, 'Location:', class: "form-label col-md-2 col-xs-12 text-right"  %>
+					<div class="col-md-10 col-xs-12">
+						<div class="col-md-8 col-xs-8"  style="right-padding: 0px; left-padding: 0px; padding-left: 0px; padding-right: 0px;">
+						<%= f.text_field :location, class: "form-control"  %>
+						</div>
+						<div class="col-md-4 col-xs-4" style="right-padding: 0px; padding-right: 0px;" >
+						<%= select_tag :state, options_for_select(us_states), class: "form-control" %>
+						</div>
+					</div>
+			</div>
+
+			<div class="form-group">
+				<div class="col-md-6 col-md-offset-6 col-xs-12">
+					<%= f.submit :Add, class: "btn btn-primary pull-right col-md-6"  %>
+				</div>
+			</div>
+
+
+
+
+			<% end %>
+
+		</div>
+
+
+</div>
+
+<script>
+$(document).ready(function(){
+$('.input-group.date').datepicker({"format": "yyyy-mm-dd",
+"autoclose": true});});
+</script>
